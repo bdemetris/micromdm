@@ -127,18 +127,20 @@ func UnmarshalDeviceCommand(data []byte, c *DeviceCommand) error {
 	}
 
 	for _, command := range protoCommandsCompleted {
-		c.Completed = append(c.Completed, Command{
-			UUID:         command.GetUuid(),
-			Payload:      command.GetPayload(),
-			CreatedAt:    time.Unix(0, command.GetCreatedAt()).UTC(),
-			LastSentAt:   time.Unix(0, command.GetLastSentAt()).UTC(),
-			Acknowledged: time.Unix(0, command.GetAcknowledged()).UTC(),
+		if command.Acknowledged > time.Now().UTC().Add(-24*7*time.Hour).UnixNano() {
+			c.Completed = append(c.Completed, Command{
+				UUID:         command.GetUuid(),
+				Payload:      command.GetPayload(),
+				CreatedAt:    time.Unix(0, command.GetCreatedAt()).UTC(),
+				LastSentAt:   time.Unix(0, command.GetLastSentAt()).UTC(),
+				Acknowledged: time.Unix(0, command.GetAcknowledged()).UTC(),
 
-			TimesSent: int(command.TimesSent),
+				TimesSent: int(command.TimesSent),
 
-			LastStatus:     command.LastStatus,
-			FailureMessage: command.FailureMessage,
-		})
+				LastStatus:     command.LastStatus,
+				FailureMessage: command.FailureMessage,
+			})
+		}
 	}
 
 	for _, command := range protoCommandsFailed {
